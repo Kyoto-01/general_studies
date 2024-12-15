@@ -12,7 +12,7 @@ echo "=================================="
 
 echo -e "\n========== STATUS - system =========="
 echo "exit status = $?" 
-echo "directory status = $( ls -l )"
+echo "directory status = $( ls -lh )"
 echo "====================================="
 
 echo -e "\n========== AFTER - test.txt =========="

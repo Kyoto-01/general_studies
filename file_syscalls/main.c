@@ -10,6 +10,7 @@ int main() {
 	char buffer[100];
 	int nbytes;
 	int seek;
+	struct stat fs; // man stat.3
 
 	// open
 
@@ -31,12 +32,20 @@ int main() {
 	fprintf(stdout, "nbytes read = %d\n", nbytes);
 	fprintf(stdout, "buffer read = %s", buffer);
 
+	// fstat
+
+	if (fstat(fd, &fs) == -1) {
+		fprintf(stderr, "Fail while fstat file.\n");
+		return 3;
+	}
+	fprintf(stdout, "file fstat size =  %d bytes\n", fs.st_size);
+
 	// lseek
 
 	seek = lseek(fd, 2 * sizeof(char), SEEK_SET);
 	if (seek == -1) {
 		fprintf(stderr, "Fail while seek file.");
-		return 3;
+		return 4;
 	}
 	fprintf(stdout, "seek = %d\n", seek);
 
@@ -46,7 +55,7 @@ int main() {
 	nbytes = write(fd, buffer, 3 * sizeof(char));
 	if (nbytes == -1) {
 		fprintf(stderr, "Fail while write file.");
-		return 4;
+		return 5;
 	}
 	fprintf(stdout, "nbytes write = %d\n", nbytes);
 	fprintf(stdout, "buffer write = %s\n", buffer);
@@ -55,8 +64,17 @@ int main() {
 
 	if (close(fd) == -1) {
 		fprintf(stderr, "Fail while close file.\n");
-		return 1;
+		return 6;
 	}
+	fprintf(stdout, "closed fd = %d\n", fd);
+
+	// stat
+
+	if (stat("test.txt", &fs) == -1) {
+		fprintf(stderr, "Fail while stat file.\n");
+		return 7;
+	};
+	fprintf(stdout, "file stat size = %d bytes\n", fs.st_size);
 
 	return 0;
 }
