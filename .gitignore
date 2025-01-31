@@ -1,4 +1,6 @@
+__pycache__/
 .vscode/
 
-a.out
+*.out
+*.exe
 *.swp
