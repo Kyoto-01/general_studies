@@ -1,13 +1,38 @@
 #include <windows.h>
-#include <stdio.h>
+#include <stdio.h> 
 
-void get_times(void) {
-	HANDLE hProcess;
+void log_errors(char* caller) {
+	DWORD errCode;
+	char* errMsg;
+	
+	errCode = GetLastError();
+	
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, errCode, 0, (char*)&errMsg, 0, NULL
+	);
+	
+	fprintf(stderr, "ERROR %d (%s): %s\n", errCode, caller, errMsg);
+	
+	LocalFree(errMsg);
+	
+	ExitProcess(errCode);
+}
+
+char* skip_program_name(char* commandLine) {
+	while (*commandLine != '\0' || *commandLine != '\t' || *commandLine != ' ')
+	{	printf("%c\n", *commandLine);
+	commandLine++;}
+	while (*commandLine == ' ' || *commandLine == '\t')
+		commandLine++;
+	
+	return commandLine;
+}
+
+void get_times(HANDLE hProcess) {
 	FILETIME fct, fet, fkt, fut;
 	SYSTEMTIME sct, set;
 	
-	hProcess = GetCurrentProcess();
-
 	if (GetProcessTimes(hProcess, &fct, &fet, &fkt, &fut)) {
 		FileTimeToSystemTime(&fct, &sct);
 		FileTimeToSystemTime(&fet, &set);
@@ -24,35 +49,43 @@ void get_times(void) {
 		);
 		printf("kt = %.3f ms\n", (double)(*((ULONGLONG*)&fkt)) / 10000);
 		printf("ut = %.3f ms\n", (double)(*((ULONGLONG*)&fut)) / 10000);
+	} else {
+		log_errors("get_times");
 	}
 }
 
-void clone_process(void) {
+PROCESS_INFORMATION create_process(void) {
 	STARTUPINFO sinfo; 
 	PROCESS_INFORMATION pinfo;
+	char* call;
 	
 	GetStartupInfo(&sinfo);
+	call = GetCommandLine();
+	call = skip_program_name(call);
 	
-	CreateProcess(
-		NULL, NULL, NULL, NULL,
+	printf("%s\n", call);
+	
+	ExitProcess(1);
+	
+	if (!CreateProcess(
+		NULL, call, NULL, NULL,
 		TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL,
 		&sinfo, &pinfo
-	);
+	)) {
+		log_errors("create_process");
+	}
 	
 	WaitForSingleObject(pinfo.hProcess, INFINITE);
 	
-	CloseHandle(pinfo.hProcess);
-	CloseHandle(pinfo.hThread);
+	return pinfo;
 }
 
 int main(void) {
-
-	for (int i = 0; i < 100000000; ++i) {
-		;
-	}
 	
-	clone_process();
-	get_times();
+	PROCESS_INFORMATION pinfo;
+	
+	pinfo = create_process();
+	get_times(pinfo.hProcess);
 	
 	return 0;
 }
