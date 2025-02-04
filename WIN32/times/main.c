@@ -82,5 +82,8 @@ int main(void) {
 	pinfo = create_process();
 	get_times(pinfo.hProcess);
 	
+	CloseHandle(pinfo.hProcess);
+	CloseHandle(pinfo.hThread);
+	
 	return 0;
 }
