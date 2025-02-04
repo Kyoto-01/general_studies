@@ -20,9 +20,8 @@ void log_errors(char* caller) {
 }
 
 char* skip_program_name(char* commandLine) {
-	while (*commandLine != '\0' || *commandLine != '\t' || *commandLine != ' ')
-	{	printf("%c\n", *commandLine);
-	commandLine++;}
+	while (*commandLine != '\0' && *commandLine && '\t' && *commandLine != ' ')
+		commandLine++;
 	while (*commandLine == ' ' || *commandLine == '\t')
 		commandLine++;
 	
@@ -62,10 +61,6 @@ PROCESS_INFORMATION create_process(void) {
 	GetStartupInfo(&sinfo);
 	call = GetCommandLine();
 	call = skip_program_name(call);
-	
-	printf("%s\n", call);
-	
-	ExitProcess(1);
 	
 	if (!CreateProcess(
 		NULL, call, NULL, NULL,
