@@ -13,7 +13,8 @@ void *print_char(void *args) {
 
 	for (i = 0; i < n; ++i) {
 		putchar(c);
-		sleep(.5);
+		fflush(stdout);
+		sleep(1);
 	}
 }
 
