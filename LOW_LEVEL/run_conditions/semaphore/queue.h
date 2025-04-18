@@ -21,12 +21,16 @@ queue_t* create_queue(void) {
 	return queue;
 }
 
+int is_void(queue_t* queue) {
+	return queue->head == NULL;
+}
+
 void enqueue(queue_t* queue, int value) {
 	queue_node_t* node = (queue_node_t*)malloc(1 * sizeof(queue_node_t));
 	node->value = value;
 	node->next = NULL;
 
-	if (queue->head == NULL)
+	if (is_void(queue))
 		queue->head = node;
 	else
 		queue->tail->next = node;
@@ -35,11 +39,15 @@ void enqueue(queue_t* queue, int value) {
 }
 
 int dequeue(queue_t* queue) {
-	queue_node_t* node = queue->head;
-	int value = queue->head->value;
+	queue_node_t* node;
+	int value = 0;
 
-	queue->head = queue->head->next;
-	free(node);
+	if (!is_void(queue)) {
+		node = queue->head;
+		value = queue->head->value;
+		queue->head = queue->head->next;
+		free(node);
+	}
 
 	return value;
 }

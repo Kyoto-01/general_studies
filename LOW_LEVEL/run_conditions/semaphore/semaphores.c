@@ -15,7 +15,7 @@ int main(void) {
         pthread_t threads[THREAD_COUNT];
         int i;
 
-        lock = create_semaphore();
+        lock = create_semaphore(1);
 
         for (i = 0; i < THREAD_COUNT; ++i)
                 pthread_create(&threads[i], NULL, set_shared, NULL);
@@ -30,13 +30,17 @@ int main(void) {
         );
 }
 
+void sighand(int sig) {}
+
 void* set_shared(void* args) {
         int i;
 
+	signal(SIGUSR1, sighand);
+
         for (i = 0; i < INCREMENT_COUNT; ++i) {
-                down(&lock);
+                down(lock);
                 ++shared;
-                up(&lock);
+                up(lock);
         }
 
         return 0;

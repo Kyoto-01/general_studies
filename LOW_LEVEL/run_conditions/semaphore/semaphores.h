@@ -1,7 +1,9 @@
 #include <unistd.h>
+#include <signal.h>
 #include <sys/syscall.h>
 
 #include "queue.h"
+#include "xchg.h"
 
 #ifndef SEMAPHORES_H
 #define SEMAPHORES_H
@@ -22,28 +24,38 @@ semaphore_t* create_semaphore(int value) {
 void down(semaphore_t* sem) {
 	int tid;
 
-	--(sem->semaphore);
+	enter_region();
 
-	if (sem->semaphore < 0) {
+	if (sem->semaphore > 0) {
+		--(sem->semaphore);
+		leave_region();
+	} else {
 		tid = syscall(SYS_gettid);
-		enqueue(sem, tid);
-		signal(SIGUSR1, (void)());
-		pause();
+		enqueue(sem->buffer, tid);
+		while (sem->semaphore <= 0) {
+			leave_region();
+			pause();
+		}
 	}
 }
 
 void up(semaphore_t* sem) {
 	int tid, tgid;
 
+	enter_region();
+
 	++(sem->semaphore);
 
 	if (sem->semaphore > 0) {
-		--(sem->semaphore);
 		tgid = getpid();
-		tid = dequeue(sem);
-		if (tid != NULL)
+		tid = dequeue(sem->buffer);
+		if (tid != 0) {
+			--(sem->semaphore);
 			syscall(SYS_tgkill, tgid, tid, SIGUSR1); 
+		}
 	}
+
+	leave_region();
 }
 
 #endif // semaphores.h
