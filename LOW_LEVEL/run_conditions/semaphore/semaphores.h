@@ -13,10 +13,15 @@ typedef struct semaphore_s {
 	queue_t* buffer;
 } semaphore_t;
 
+void sigusr1_handler(int signal) {}
+
 semaphore_t* create_semaphore(int value) {
 	semaphore_t* tmp = (semaphore_t*)malloc(1 * sizeof(semaphore_t));
 	tmp->semaphore = value;
 	tmp->buffer = create_queue();
+
+	// if there's not a function, SIGUSR1 kills the thread
+	signal(SIGUSR1, sigusr1_handler);
 
 	return tmp;
 }
@@ -25,17 +30,14 @@ void down(semaphore_t* sem) {
 	int tid;
 
 	enter_region();
-
 	if (sem->semaphore > 0) {
 		--(sem->semaphore);
 		leave_region();
 	} else {
 		tid = syscall(SYS_gettid);
 		enqueue(sem->buffer, tid);
-		while (sem->semaphore <= 0) {
-			leave_region();
-			pause();
-		}
+		leave_region();
+		pause();
 	}
 }
 

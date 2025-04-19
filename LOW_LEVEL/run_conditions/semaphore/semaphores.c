@@ -30,12 +30,8 @@ int main(void) {
         );
 }
 
-void sighand(int sig) {}
-
 void* set_shared(void* args) {
         int i;
-
-	signal(SIGUSR1, sighand);
 
         for (i = 0; i < INCREMENT_COUNT; ++i) {
                 down(lock);
