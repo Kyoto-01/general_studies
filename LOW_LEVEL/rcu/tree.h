@@ -1,5 +1,9 @@
+// tree.h
+
 #include <stdlib.h>
-#include <stdio.h>
+
+#ifndef __TREE_H__
+#define __TREE_H__
 
 typedef struct node_s {
 	void* data;
@@ -33,22 +37,4 @@ void tree_insert(node_t* parent, node_t* node) {
 	parent->childs[parent->childCount - 1] = node; 
 }
 
-void tree_dbg(node_t* root) {
-	if (root != NULL) {
-		printf("%d\n", *((int*)(root->data)));
-		for (int i = 0; i < root->childCount; ++i) {
-			tree_dbg((root->childs)[i]);
-		}
-	}
-}
-
-int main() {
-	int vals[2] = {1, 2};
-	node_t* myRoot = node_init((void*)&vals[0]);
-	tree_t* myTree = tree_init(myRoot);
-	node_t* myNode = node_init((void*)&vals[1]);
-	tree_insert(myTree->root, myNode);
-	tree_dbg(myTree->root);
-
-	return 0;
-}
+#endif // tree.h
