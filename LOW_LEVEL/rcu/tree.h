@@ -25,13 +25,22 @@ node_t* node_init(void* data) {
 }
 
 void node_update(node_t* node, node_t* parent, int index, void* data) {
-	node_t* newNode = (node_t*)malloc(sizeof(node_t));
+	node_t* newNode = node_init(data);
 
-	newNode->data = data;
+	newNode->childCount = node->childCount;
 	newNode->childs = node->childs;
 
 	if (parent != NULL)
 		parent->childs[index] = newNode;
+}
+
+void node_remove(node_t* node) {
+	int i;
+
+	for (i = 0; i < node->childCount; ++i)
+		node_remove(node->childs[i]);
+
+	free(node);
 }
 
 tree_t* tree_init(node_t* root) {
