@@ -24,6 +24,16 @@ node_t* node_init(void* data) {
 	return tmpNode;
 }
 
+void node_update(node_t* node, node_t* parent, int index, void* data) {
+	node_t* newNode = (node_t*)malloc(sizeof(node_t));
+
+	newNode->data = data;
+	newNode->childs = node->childs;
+
+	if (parent != NULL)
+		parent->childs[index] = newNode;
+}
+
 tree_t* tree_init(node_t* root) {
 	tree_t* tmpTree = (tree_t*)malloc(sizeof(tree_t));
 	tmpTree->root = root;

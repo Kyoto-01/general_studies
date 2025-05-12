@@ -7,9 +7,6 @@
 
 #define READER_NUM 3
 
-pthread_mutex_t output_line_mutex;
-long long output_line;
-
 int myVals[5][3] = {
 	{0, 0, 0}, 
 	{1, 1, 1},
@@ -19,6 +16,9 @@ int myVals[5][3] = {
 };
 node_t* myNodes[5];
 tree_t* myTree;
+
+pthread_mutex_t output_line_mutex;
+long long output_line;
 
 tree_t* start_test_tree() {
 	/* ------------------
@@ -46,7 +46,7 @@ tree_t* start_test_tree() {
 
 void test_tree_nodes(node_t* node) {
 	int i;
-
+	
 	pthread_mutex_lock(&output_line_mutex);
 
 	printf(
@@ -70,24 +70,27 @@ void test_tree_nodes(node_t* node) {
 		test_tree_nodes(node->childs[i]);
 }
 
-void write_tree_node(node_t* node) {
-	int randValue, randSleep, i;
+void write_tree_node(node_t* node, node_t* parent, int position) {
+	int randSleep, randValue, i;
+	int* data = (int*)malloc(sizeof(int) * 3);
 
 	randValue = (int)(random() % 100);
 	randSleep = (int)(random() % 5);
 
 	for (i = 0; i < 3; ++i) {
-		((int*)node->data)[i] = randValue;
+		data[i] = randValue;
 		sleep(randSleep);
 	}
 
+	node_update(node, parent, position, (void*)data);
+
 	for (i = 0; i < node->childCount; ++i)
-		write_tree_node(node->childs[i]);
+		write_tree_node(node->childs[i], node, i);
 }	
 
 void* writer_task(void* args) {
 	while (1) {
-		write_tree_node(myTree->root);
+		write_tree_node(myTree->root, NULL, 0);
 	}
 }
 
