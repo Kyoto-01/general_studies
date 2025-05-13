@@ -40,6 +40,7 @@ void node_remove(node_t* node) {
 	for (i = 0; i < node->childCount; ++i)
 		node_remove(node->childs[i]);
 
+	free(node->data);
 	free(node);
 }
 

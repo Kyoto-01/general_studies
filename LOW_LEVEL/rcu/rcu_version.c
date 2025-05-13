@@ -7,13 +7,6 @@
 
 #define READER_NUM 3
 
-int myVals[5][3] = {
-	{0, 0, 0}, 
-	{1, 1, 1},
-	{2, 2, 2},
-	{3, 3, 3},
-	{4, 4, 4}
-};
 node_t* myNodes[5];
 tree_t* myTree;
 
@@ -32,9 +25,12 @@ tree_t* start_test_tree() {
 	------------------- */
 
 	int i;
+	void* val;
 
-	for (i = 0; i < 6; ++i)
-		myNodes[i] = node_init((void*)(myVals + i));
+	for (i = 0; i < 6; ++i) {
+		val = (void*)calloc(3, sizeof(int));
+		myNodes[i] = node_init(val);
+	}
 		
 	tree_insert(myNodes[0], myNodes[1]);
 	tree_insert(myNodes[0], myNodes[4]);
@@ -86,6 +82,8 @@ void write_tree_node(node_t* node, node_t* parent, int position) {
 
 	for (i = 0; i < node->childCount; ++i)
 		write_tree_node(node->childs[i], node, i);
+
+	node_remove(node);
 }	
 
 void* writer_task(void* args) {
@@ -112,7 +110,7 @@ int main(int argc, char* argv[]) {
 	pthread_t readers[READER_NUM];
 	int readerMaxSleep = 5, i;
 	
-	myTree = start_test_tree(myVals, myNodes);
+	myTree = start_test_tree();
 
 	pthread_mutex_init(&output_line_mutex, NULL);
 
