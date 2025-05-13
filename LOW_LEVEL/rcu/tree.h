@@ -1,6 +1,7 @@
 // tree.h
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifndef __TREE_H__
 #define __TREE_H__
@@ -24,24 +25,22 @@ node_t* node_init(void* data) {
 	return tmpNode;
 }
 
-void node_update(node_t* node, node_t* parent, int index, void* data) {
+void node_remove(node_t* node) {
+	free(node->data);
+	free(node);
+}
+
+node_t* node_update(node_t* node, node_t* parent, int index, void* data, int grace) {
 	node_t* newNode = node_init(data);
 
 	newNode->childCount = node->childCount;
 	newNode->childs = node->childs;
+	parent->childs[index] = newNode;
 
-	if (parent != NULL)
-		parent->childs[index] = newNode;
-}
+	sleep(grace);
+	node_remove(node);
 
-void node_remove(node_t* node) {
-	int i;
-
-	for (i = 0; i < node->childCount; ++i)
-		node_remove(node->childs[i]);
-
-	free(node->data);
-	free(node);
+	return newNode;
 }
 
 tree_t* tree_init(node_t* root) {

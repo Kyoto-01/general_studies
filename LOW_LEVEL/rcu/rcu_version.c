@@ -9,6 +9,7 @@
 
 node_t* myNodes[5];
 tree_t* myTree;
+int gracePeriod = 1; // seconds
 
 pthread_mutex_t output_line_mutex;
 long long output_line;
@@ -67,23 +68,31 @@ void test_tree_nodes(node_t* node) {
 }
 
 void write_tree_node(node_t* node, node_t* parent, int position) {
-	int randSleep, randValue, i;
-	int* data = (int*)malloc(sizeof(int) * 3);
+	int i;
 
-	randValue = (int)(random() % 100);
-	randSleep = (int)(random() % 5);
-
-	for (i = 0; i < 3; ++i) {
-		data[i] = randValue;
-		sleep(randSleep);
+	if (parent != NULL) {
+		int randSleep, randValue;
+		int* data = (int*)malloc(sizeof(int) * 3);
+	
+		randValue = (int)(random() % 100);
+		randSleep = (int)(random() % 5);
+	
+		for (i = 0; i < 3; ++i) {
+			data[i] = randValue;
+			sleep(randSleep);
+		}
+	
+		node = node_update(
+			node, 
+			parent, 
+			position, 
+			(void*)data, 
+			gracePeriod
+		);
 	}
-
-	node_update(node, parent, position, (void*)data);
-
+	
 	for (i = 0; i < node->childCount; ++i)
 		write_tree_node(node->childs[i], node, i);
-
-	node_remove(node);
 }	
 
 void* writer_task(void* args) {
