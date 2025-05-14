@@ -4,12 +4,12 @@
 #include <unistd.h>
 
 #include "tree.h"
+#include "rcu.h"
 
 #define READER_NUM 3
 
 node_t* myNodes[5];
 tree_t* myTree;
-int gracePeriod = 1; // seconds
 
 pthread_mutex_t output_line_mutex;
 long long output_line;
@@ -87,8 +87,9 @@ void write_tree_node(node_t* node, node_t* parent, int position) {
 			parent, 
 			position, 
 			(void*)data, 
-			gracePeriod
+			grace_period
 		);
+		printf("-----> %ld\n", grace_period);
 	}
 	
 	for (i = 0; i < node->childCount; ++i)
@@ -106,7 +107,10 @@ void* reader_task(void* args) {
 	int randomSleep;
 
 	while (1) {
+		rcu_enter();
 		test_tree_nodes(myTree->root);
+		rcu_exit();
+
 		randomSleep = (int)(random() % maxSleep);
 		sleep(randomSleep);
 	}
